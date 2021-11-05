@@ -178,7 +178,6 @@ class Report
                 $this->outputter->pageNumber++;
                 $newPage = true;
             } else if ($forceNewPage) {
-                $this->outputter->flushPDF();
                 $this->outputter->pdf->AddPage();
                 $this->outputter->pageNumber++;
                 $newPage = true;
@@ -192,7 +191,6 @@ class Report
                 $hs = $this->outputter->getPDFLineSpacing();
                 // If we can't the headings on the current page, begin a new page.
                 if (($this->outputter->pdf->GetY() + $hs) > $this->outputter->pdf->getPageBreakTrigger()) {
-                    $this->outputter->flushPDF();
                     $this->outputter->pdf->AddPage();
                     $this->outputter->pageNumber++;
                     $newPage = true;

@@ -218,18 +218,6 @@ class ReportOutputter
         $this->pdfFilePointer = fopen($this->pdfFilename, 'wb');
     }
 
-    public function flushPDF() {
-        if ($this->pdfFilePointer !== false) {
-            if ($this->pdf !== null) {
-                $data = $this->pdf->Output('S');
-                $this->pdf->resetBuffer();
-                if ($data != '') {
-                    fwrite($this->pdfFilePointer, $data, strlen($data));
-                }
-            }
-        }
-    }
-
     public function outputText($text) {
         if ($text != '') {
             if ($this->outputStream !== false) {
@@ -256,9 +244,17 @@ class ReportOutputter
         case 'pdf':
             if ($this->pdfFilePointer !== false) {
                 if ($this->pdf !== null) $this->pdf->Close();
-                $this->flushPDF();
-                fclose($this->pdfFilePointer);
-                $this->pdfFilePointer = false;
+                if ($this->pdfFilePointer !== false) {
+                    if ($this->pdf !== null) {
+                        $data = $this->pdf->Output('S');
+                        $this->pdf->resetBuffer();
+                        if ($data != '') {
+                            fwrite($this->pdfFilePointer, $data, strlen($data));
+                        }
+                    }
+                    fclose($this->pdfFilePointer);
+                    $this->pdfFilePointer = false;
+                }
             }
             if ($this->pdfUseTempFileForOutput) {
                 $this->output = file_get_contents($this->pdfFilename);
