@@ -6,7 +6,7 @@ use Roncemer\PHPReportGen\ReportColumn;
 use Roncemer\PHPReportGen\ReportLevel;
 use Roncemer\PHPReportGen\ReportOutputter;
 
-$outputFormats = ['html', 'csv', 'tsv', 'xls', 'pdf'];
+$outputFormats = array_column(ReportOutputter::$OUTPUT_FORMATS, 'format');
 
 if ($argc != 2) {
     fprintf(STDERR, "Please specify output format: %s\n", implode(', ', $outputFormats));
@@ -247,15 +247,17 @@ $report->outputCompleteHTMLDocument = true;
 $fp = false;
 
 switch ($outputter->outputFormat) {
-case 'html':
-case 'csv':
-case 'tsv':
+case 'xls':
+case 'xlsx':
+case 'ods':
+    $outputter->setWorkbookFilename(__DIR__.'/output.'.$outputter->outputFormat);
+    break;
+case 'pdf':
+    $outputter->setPDFFilename(__DIR__.'/output.'.$outputter->outputFormat);
+    break;
+default:
     $fp = fopen(__DIR__.'/output.'.$outputter->outputFormat, 'w');
     $outputter->setOutputStream($fp);
-    break;
-case 'xls':
-case 'pdf':
-    $outputter->setWorkbookFilename(__DIR__.'/output.'.$outputter->outputFormat);
     break;
 }
 

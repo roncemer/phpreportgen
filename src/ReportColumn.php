@@ -1,7 +1,8 @@
 <?php
 namespace Roncemer\PHPReportGen;
 
-class ReportColumn {
+class ReportColumn
+{
     public $name;
     public $heading;
     public $align;

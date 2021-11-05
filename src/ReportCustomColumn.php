@@ -1,7 +1,8 @@
 <?php
 namespace Roncemer\PHPReportGen;
 
-class ReportCustomColumn {
+class ReportCustomColumn
+{
     public $align;
     public $columnSpan;
 

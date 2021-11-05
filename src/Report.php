@@ -2,8 +2,10 @@
 namespace Roncemer\PHPReportGen;
 
 use stdClass;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
-class Report {
+class Report
+{
     public $columns;
     public $levels;
     public $outputter;
@@ -30,11 +32,12 @@ class Report {
     // values in pdf output format.
     public $alwaysOutputUniqueIdColumnsInPDFFormat = false;
 
-    // Whether to always output unique identifier column values when outputting xls
-    // format. Normally it would be desirable to suppress duplicate unique identifier
-    // column values in xls format, so this defaults to false.
+    // Whether to always output unique identifier column values when outputting xls,
+    // xlsx or ods (spreadsheet) formats. Normally it would be desirable to suppress
+    // duplicate unique identifier column values in spreadsheet output formats, so
+    // this defaults to false.
     // Set this to true to disable suppressing of duplicate unique identifier column
-    // values in xls output format.
+    // values in spreadsheet output formats.
     public $alwaysOutputUniqueIdColumnsInXLSFormat = false;
 
     // Whether to output totals when outputting csv or tsv format.
@@ -163,6 +166,8 @@ class Report {
     protected function outputHeading($forceNewPage = false) {
         switch ($this->outputter->outputFormat) {
         case 'xls':
+        case 'xlsx':
+        case 'ods':
             if ($this->outputter->workbook === null) $this->outputter->createWorkbook();
             break;
         case 'pdf':
@@ -186,8 +191,7 @@ class Report {
                 );
                 $hs = $this->outputter->getPDFLineSpacing();
                 // If we can't the headings on the current page, begin a new page.
-                if (($this->outputter->pdf->y + $hs) >
-                    $this->outputter->pdf->PageBreakTrigger) {
+                if (($this->outputter->pdf->GetY() + $hs) > $this->outputter->pdf->getPageBreakTrigger()) {
                     $this->outputter->flushPDF();
                     $this->outputter->pdf->AddPage();
                     $this->outputter->pageNumber++;
@@ -216,11 +220,10 @@ class Report {
                         0,
                         'L'
                     );
-                    $this->outputter->pdf->x += $spc;
+                    $this->outputter->pdf->SetX($this->outputter->pdf->GetX() + $spc);
                     unset($spc);
                 } else {
-                    $this->outputter->pdf->x +=
-                        $this->outputter->getPDFPageWidth()-$this->pdfPageNumWidth;
+                    $this->outputter->pdf->SetX($this->outputter->pdf->GetX() + $this->outputter->getPDFPageWidth()-$this->pdfPageNumWidth);
                 }
 
                 // Output page number.
@@ -292,8 +295,10 @@ class Report {
                 if ($sep == '') $sep = "\t";
                 break;
             case 'xls':
+            case 'xlsx':
+            case 'ods':
                 $cell = $this->outputter->worksheet->getCellByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
-                $cell->setValueExplicit($col->heading, PHPExcel_Cell_DataType::TYPE_STRING);
+                $cell->setValueExplicit($col->heading, DataType::TYPE_STRING);
                 $style = $this->outputter->worksheet->getStyleByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
                 $style->getAlignment()->setHorizontal('center');
                 $style->getFont()->setBold(true);
@@ -302,33 +307,30 @@ class Report {
                 $colWidth = (int)
                     (((double)$col->relativeWidth/(double)$totalRelativeWidth) *
                      (double)($this->outputter->getPDFPageWidth()-$pdfTotalColSpacing));
+                $this->outputter->setPDFRGBDrawColor($this->pdfHeadingBorderRGB);
+                $this->outputter->setPDFRGBTextColor($this->pdfHeadingTextRGB);
                 if ($this->pdfHeadingBackgroundFill) {
-                    $savex = $this->outputter->pdf->x;
-                    $savey = $this->outputter->pdf->y;
                     $this->outputter->setPDFRGBFillColor($this->pdfHeadingBackgroundRGB);
                     $this->outputter->pdf->Cell(
                         $colWidth,
                         $this->outputter->getPDFLineSpacing(),
-                        '',
-                        0,
+                        $col->heading,
+                        $this->pdfHeadingBorder,
                         0,
                         'C',
                         1
                     );
-                    $this->outputter->pdf->x = $savex;
-                    $this->outputter->pdf->y = $savey;
+                } else {
+                    $this->outputter->pdf->Cell(
+                        $colWidth,
+                        $this->outputter->getPDFLineSpacing(),
+                        $col->heading,
+                        $this->pdfHeadingBorder,
+                        0,
+                        'C'
+                    );
                 }
-                $this->outputter->setPDFRGBDrawColor($this->pdfHeadingBorderRGB);
-                $this->outputter->setPDFRGBTextColor($this->pdfHeadingTextRGB);
-                $this->outputter->pdf->Cell(
-                    $colWidth,
-                    $this->outputter->getPDFLineSpacing(),
-                    $col->heading,
-                    $this->pdfHeadingBorder,
-                    0,
-                    'C'
-                );
-                $this->outputter->pdf->x += $this->pdfColumnSpacing;
+                $this->outputter->pdf->SetX($this->outputter->pdf->GetX() + $this->pdfColumnSpacing);
                 break;
             }
         }
@@ -345,6 +347,8 @@ class Report {
             $this->outputter->outputText($rowData);
             break;
         case 'xls':
+        case 'xlsx':
+        case 'ods':
             $this->outputter->worksheetRowNum++;
             break;
         case 'pdf':
@@ -372,8 +376,7 @@ class Report {
                     $this->pdfDetailFontStyle,
                     $this->pdfDetailFontSize
                 );
-                if ((($this->outputter->pdf->y + $this->outputter->getPDFLineSpacing()) >
-                     $this->outputter->pdf->PageBreakTrigger)) {
+                if ((($this->outputter->pdf->GetY() + $this->outputter->getPDFLineSpacing()) > $this->outputter->pdf->getPageBreakTrigger())) {
                     $this->outputHeading(true);
                     $justOutputHeading = true;
                     $allowSuppression = false;
@@ -425,6 +428,8 @@ class Report {
             if ($this->alwaysOutputUniqueIdColumnsInPDFFormat) $allowSuppression = false;
             break;
         case 'xls':
+        case 'xlsx':
+        case 'ods':
             if ($this->alwaysOutputUniqueIdColumnsInXLSFormat) $allowSuppression = false;
             break;
         }
@@ -576,8 +581,10 @@ class Report {
                 if ($sep == '') $sep = "\t";
                 break;
             case 'xls':
+            case 'xlsx':
+            case 'ods':
                 $cell = $this->outputter->worksheet->getCellByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
-                $cell->setValueExplicit($dispval, PHPExcel_Cell_DataType::TYPE_STRING);
+                $cell->setValueExplicit($dispval, DataType::TYPE_STRING);
                 $style = $this->outputter->worksheet->getStyleByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
                 $style->getAlignment()->setHorizontal($col->align);
                 break;
@@ -594,7 +601,7 @@ class Report {
                     strtoupper($col->align[0]),
                     1
                 );
-                $this->outputter->pdf->x += $this->pdfColumnSpacing;
+                $this->outputter->pdf->SetX($this->outputter->pdf->GetX() + $this->pdfColumnSpacing);
                 break;
             }
 
@@ -618,6 +625,8 @@ class Report {
             $this->outputter->outputText($rowData);
             break;
         case 'xls':
+        case 'xlsx':
+        case 'ods':
             $this->outputter->worksheetRowNum++;
             break;
         case 'pdf':
@@ -711,8 +720,7 @@ class Report {
                     $pdfFontStyle,
                     $pdfFontSize
                 );
-                if (($this->outputter->pdf->y + $this->outputter->getPDFLineSpacing()) >
-                    $this->outputter->pdf->PageBreakTrigger) {
+                if (($this->outputter->pdf->GetY() + $this->outputter->getPDFLineSpacing()) > $this->outputter->pdf->getPageBreakTrigger()) {
                     $this->outputHeading(true);
                 }
             }
@@ -778,8 +786,10 @@ class Report {
                 for ($cs = 0; $cs < $columnSpan; $cs++) $rowData .= $sep;
                 break;
             case 'xls':
+            case 'xlsx':
+            case 'ods':
                 $cell = $this->outputter->worksheet->getCellByColumnAndRow($ci, $this->outputter->worksheetRowNum);
-                $cell->setValueExplicit($text, PHPExcel_Cell_DataType::TYPE_STRING);
+                $cell->setValueExplicit($text, DataType::TYPE_STRING);
                 $style = $this->outputter->worksheet->getStyleByColumnAndRow($ci, $this->outputter->worksheetRowNum);
                 $style->getAlignment()->setHorizontal($align);
                 if (($appearance == 'heading') || ($appearance == 'totals')) {
@@ -805,33 +815,30 @@ class Report {
                 }
                 unset($col2);        // Release reference to last element
 
+                $this->outputter->setPDFRGBDrawColor($pdfBorderRGB);
+                $this->outputter->setPDFRGBTextColor($pdfTextRGB);
                 if ($pdfBackgroundFill) {
-                    $savex = $this->outputter->pdf->x;
-                    $savey = $this->outputter->pdf->y;
                     $this->outputter->setPDFRGBFillColor($pdfBackgroundRGB);
                     $this->outputter->pdf->Cell(
                         $colWidth,
                         $this->outputter->getPDFLineSpacing(),
-                        '',
-                        0,
+                        $text,
+                        $pdfBorder,
                         0,
                         'C',
                         1
                     );
-                    $this->outputter->pdf->x = $savex;
-                    $this->outputter->pdf->y = $savey;
+                } else {
+                    $this->outputter->pdf->Cell(
+                        $colWidth,
+                        $this->outputter->getPDFLineSpacing(),
+                        $text,
+                        $pdfBorder,
+                        0,
+                        strtoupper($align[0])
+                    );
                 }
-                $this->outputter->setPDFRGBDrawColor($pdfBorderRGB);
-                $this->outputter->setPDFRGBTextColor($pdfTextRGB);
-                $this->outputter->pdf->Cell(
-                    $colWidth,
-                    $this->outputter->getPDFLineSpacing(),
-                    $text,
-                    $pdfBorder,
-                    0,
-                    strtoupper($align[0])
-                );
-                $this->outputter->pdf->x += $this->pdfColumnSpacing;
+                $this->outputter->pdf->SetX($this->outputter->pdf->GetX() + $this->pdfColumnSpacing);
                 break;
             }
         }
@@ -847,6 +854,8 @@ class Report {
             $this->outputter->outputText($rowData);
             break;
         case 'xls':
+        case 'xlsx':
+        case 'ods':
             $this->outputter->worksheetRowNum++;
             break;
         case 'pdf':
@@ -881,8 +890,7 @@ class Report {
                     $this->pdfTotalsFontStyle,
                     $this->pdfTotalsFontSize
                 );
-                if (($this->outputter->pdf->y + $this->outputter->getPDFLineSpacing()) >
-                    $this->outputter->pdf->PageBreakTrigger) {
+                if (($this->outputter->pdf->GetY() + $this->outputter->getPDFLineSpacing()) > $this->outputter->pdf->getPageBreakTrigger()) {
                     $this->outputHeading(true);
                 }
             }
@@ -974,8 +982,10 @@ class Report {
                     for ($i = 1; $i < $nTotDescCols; $i++) $rowData .= $sep;
                     break;
                 case 'xls':
+                case 'xlsx':
+                case 'ods':
                     $cell = $this->outputter->worksheet->getCellByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
-                    $cell->setValueExplicit($level->totalsDescription.':', PHPExcel_Cell_DataType::TYPE_STRING);
+                    $cell->setValueExplicit($level->totalsDescription.':', DataType::TYPE_STRING);
                     $style = $this->outputter->worksheet->getStyleByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
                     $style->getAlignment()->setHorizontal($level->totalsDescriptionAlign);
                     $style->getFont()->setBold(true);
@@ -1006,7 +1016,7 @@ class Report {
                         0,
                         strtoupper($level->totalsDescriptionAlign[0])
                     );
-                    $this->outputter->pdf->x += $this->pdfColumnSpacing;
+                    $this->outputter->pdf->SetX($this->outputter->pdf->GetX() + $this->pdfColumnSpacing);
                     break;
                 }
                 $ci += ($nTotDescCols-1);
@@ -1078,9 +1088,11 @@ class Report {
                     if ($sep == '') $sep = "\t";
                     break;
                 case 'xls':
+                case 'xlsx':
+                case 'ods':
                     if (!$isTotCol) break;
                     $cell = $this->outputter->worksheet->getCellByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
-                    $cell->setValueExplicit($dispval, PHPExcel_Cell_DataType::TYPE_STRING);
+                    $cell->setValueExplicit($dispval, DataType::TYPE_STRING);
                     $style = $this->outputter->worksheet->getStyleByColumnAndRow($colNum, $this->outputter->worksheetRowNum);
                     $style->getAlignment()->setHorizontal($col->align);
                     $style->getFont()->setBold(true);
@@ -1097,7 +1109,7 @@ class Report {
                         0,
                         strtoupper($col->align[0])
                     );
-                    $this->outputter->pdf->x += $this->pdfColumnSpacing;
+                    $this->outputter->pdf->SetX($this->outputter->pdf->GetX() + $this->pdfColumnSpacing);
                     break;
                 }
             }    // if ($colName == $level->totalsDescriptionLeftColumnName) ... else
@@ -1115,6 +1127,8 @@ class Report {
             $this->outputter->outputText($rowData);
             break;
         case 'xls':
+        case 'xlsx':
+        case 'ods':
             $this->outputter->worksheetRowNum++;
             break;
         case 'pdf':

@@ -1,7 +1,8 @@
 <?php
 namespace Roncemer\PHPReportGen;
 
-class ReportLevel {
+class ReportLevel
+{
     public $name;
     public $uniqueIdColumnNames;
     public $totalsDescription;

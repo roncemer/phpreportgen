@@ -1,7 +1,10 @@
 <?php
 namespace Roncemer\PHPReportGen;
 
-class ReportOutputter {
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
+class ReportOutputter
+{
     // This array can be read externally.  It is an array of objects, each of which describes
     // an available output format and contains the following attributes:
     //     format: The output format.  This value should be passed to the setOutputFormat()
@@ -158,11 +161,11 @@ class ReportOutputter {
     }
 
     public function getPDFPageWidth() {
-        return $this->pdf->w - ($this->pdf->lMargin + $this->pdf->rMargin);
+        return $this->pdf->GetPageWidth() - ($this->pdf->getLMargin() + $this->pdf->getRMargin());
     }
 
     public function getPDFLineSpacing() {
-        return (int)($this->pdf->FontSize*1.25);
+        return (int)($this->pdf->getFontSize()*1.25);
     }
 
     public function reset() {
@@ -189,11 +192,12 @@ class ReportOutputter {
     }
 
     public function createWorkbook() {
-        if (($this->workbook === null) && ($this->outputFormat == 'xls')) {
+        if (($this->workbook === null) &&
+            (($this->outputFormat == 'xls') || ($this->outputFormat == 'xlsx') || ($this->outputFormat == 'ods'))) {
             if ($this->workbookUseTempFileForOutput) {
                 $this->workbookFilename = tempnam('/tmp', 'rpt');
             }
-            $this->workbook = new PHPExcel();
+            $this->workbook = new Spreadsheet();
             $this->workbook->setActiveSheetIndex(0);
             $this->worksheet = $this->workbook->getActiveSheet();
         }
@@ -204,12 +208,12 @@ class ReportOutputter {
             if ($this->pdfUseTempFileForOutput) {
                 $this->pdfFilename = tempnam('/tmp', 'rpt');
             }
-            $this->pdf = new FPDF(
+            $this->pdf = new FPDFCustom(
                 $this->pdfPageOrientation,
                 'pt',
                 $this->pdfPageFormat
             );
-            $this->pdf->AutoPageBreak = false;
+            $this->pdf->SetAutoPageBreak(false);
         }
         $this->pdfFilePointer = fopen($this->pdfFilename, 'wb');
     }
@@ -217,8 +221,8 @@ class ReportOutputter {
     public function flushPDF() {
         if ($this->pdfFilePointer !== false) {
             if ($this->pdf !== null) {
-                $data = $this->pdf->buffer;
-                $this->pdf->buffer = '';
+                $data = $this->pdf->Output('S');
+                $this->pdf->resetBuffer();
                 if ($data != '') {
                     fwrite($this->pdfFilePointer, $data, strlen($data));
                 }
@@ -239,8 +243,11 @@ class ReportOutputter {
     public function finish() {
         switch ($this->outputFormat) {
         case 'xls':
-            $xlswriter = new PHPExcel_Writer_Excel5($this->workbook);
-            $xlswriter->save($this->workbookFilename);
+        case 'xlsx':
+        case 'ods':
+            $writerClass = 'PhpOffice\\PhpSpreadsheet\Writer\\'.ucfirst($this->outputFormat);
+            $writer = new $writerClass($this->workbook);
+            $writer->save($this->workbookFilename);
             if ($this->workbookUseTempFileForOutput) {
                 $this->output = file_get_contents($this->workbookFilename);
                 @unlink($this->workbookFilename);
@@ -287,6 +294,8 @@ ReportOutputter::$OUTPUT_FORMATS = array(
     (object)array('format'=>'csv', 'mimeType'=>'text/csv', 'extension'=>'.csv', 'description'=>'Comma-Separated Values'),
     (object)array('format'=>'tsv', 'mimeType'=>'text/tab-separated-values', 'extension'=>'.tsv', 'description'=>'Tab-Separated Values'),
     (object)array('format'=>'xls', 'mimeType'=>'application/vnd.ms-excel', 'extension'=>'.xls', 'description'=>'XLS Spreadsheet'),
+    (object)array('format'=>'xlsx', 'mimeType'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'extension'=>'.xlsx', 'description'=>'XLSX Spreadsheet'),
+    (object)array('format'=>'ods', 'mimeType'=>'application/vnd.oasis.opendocument.spreadsheet', 'extension'=>'.xlsx', 'description'=>'ODS Spreadsheet'),
     (object)array('format'=>'pdf', 'mimeType'=>'application/pdf', 'extension'=>'.pdf', 'description'=>'Portable Document Format (PDF)'),
 );
 
