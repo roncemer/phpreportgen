@@ -4,7 +4,10 @@
     "keywords": ["reporting", "csv", "tsv", "xls", "pdf"],
     "homepage": "https://github.com/roncemer/phpreportgen",
     "type": "library",
-    "license": "MIT, BSD",
+    "license": [
+        "MIT",
+        "BSD-3-Clause"
+    ],
     "authors": [
         {
             "name": "Ronald B. Cemer",
