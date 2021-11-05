@@ -795,7 +795,7 @@ class Report
                 if (($appearance == 'heading') || ($appearance == 'totals')) {
                     $style->getFont()->setBold(true);
                 }
-                if ($columnSpan > 0) {
+                if ($columnSpan > 1) {
                     $this->outputter->worksheet->mergeCellsByColumnAndRow(
                         $ci,
                         $this->outputter->worksheetRowNum,
