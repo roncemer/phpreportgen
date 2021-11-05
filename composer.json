@@ -1,29 +1,23 @@
 {
     "name": "roncemer/phpreportgen",
     "description": "HTML, CSV, TSV, XLS, PDF reporting package, with nested sections and totaling",
+    "keywords": ["reporting", "csv", "tsv", "xls", "pdf"],
+    "homepage": "https://github.com/roncemer/phpreportgen",
     "type": "library",
-    "keywords": [
-        "reporting",
-        "csv",
-        "tsv",
-        "xls",
-        "pdf"
-    ],
+    "license": "MIT, BSD",
     "authors": [
         {
             "name": "Ronald B. Cemer",
-            "email": "ron@roncemer.com"
+            "email": "ron@roncemer.com",
+            "homepage": "https://roncemer.com/"
         }
     ],
-    "license": "MIT",
     "require": {
         "php": ">=7.3",
         "phpoffice/phpspreadsheet": ">=1.19.0",
         "fpdf/fpdf": ">=1.8.4"
     },
     "autoload": {
-        "files": [
-            "Report.php"
-        ]
+        "psr-4": {"Roncemer\\PHPReportGen\\": "src"}
     }
 }

@@ -1,5 +1,24 @@
 <?php
-include './Report.class.php';
+require_once(dirname(__DIR__).'/vendor/autoload.php');
+
+use Roncemer\PHPReportGen\Report;
+use Roncemer\PHPReportGen\ReportColumn;
+use Roncemer\PHPReportGen\ReportLevel;
+use Roncemer\PHPReportGen\ReportOutputter;
+
+$outputFormats = ['html', 'csv', 'tsv', 'xls', 'pdf'];
+
+if ($argc != 2) {
+    fprintf(STDERR, "Please specify output format: %s\n", implode(', ', $outputFormats));
+    exit(1);
+}
+
+if (!in_array($argv[1], $outputFormats)) {
+    fprintf(STDERR, "Invalid output format(%s); please specify one of the following: %s\n", $argv[1], implode(', ', $outputFormats));
+    exit(2);
+}
+
+$outputFormat = $argv[1];
 
 // --------------------------------
 // Test Data
@@ -9,7 +28,7 @@ class Client {
 	public $clientId;
 	public $clientName;
 
-	public function Client($clientId, $clientName) {
+	public function __construct($clientId, $clientName) {
 		$this->clientId = $clientId;
 		$this->clientName = $clientName;
 	}
@@ -28,7 +47,7 @@ class Product {
 	public $productDescription;
 	public $unitPrice;
 
-	public function Product($productId, $productDescription, $unitPrice) {
+	public function __construct($productId, $productDescription, $unitPrice) {
 		$this->productId = $productId;
 		$this->productDescription = $productDescription;
 		$this->unitPrice = $unitPrice;
@@ -53,7 +72,7 @@ class ReportRow {
 	public $unitPrice;
 	public $quantity;
 
-	public function ReportRow($clientId, $saleDate, $productId, $quantity) {
+	public function __construct($clientId, $saleDate, $productId, $quantity) {
 		global $clients, $products;
 
 		$this->clientId = $clientId;
@@ -221,12 +240,24 @@ $reportLevels = array(
 // --------------------------------
 
 $outputter = new ReportOutputter();
-///$outputter->setOutputFormat('html');
-$outputter->setOutputFormat('pdf');
-if ($outputter->outputFormat == 'xls') $outputter->setWorkbookFilename('/tmp/x.xls');
-if ($outputter->outputFormat == 'pdf') $outputter->setPDFFilename('/tmp/x.pdf');
-
+$outputter->setOutputFormat($outputFormat);
 $report = new Report($reportColumns, $reportLevels, $outputter, 'Client Purchases by Date');
+$report->outputCompleteHTMLDocument = true;
+
+$fp = false;
+
+switch ($outputter->outputFormat) {
+case 'html':
+case 'csv':
+case 'tsv':
+    $fp = fopen(__DIR__.'/output.'.$outputter->outputFormat, 'w');
+    $outputter->setOutputStream($fp);
+    break;
+case 'xls':
+case 'pdf':
+    $outputter->setWorkbookFilename(__DIR__.'/output.'.$outputter->outputFormat);
+    break;
+}
 
 foreach ($rows as &$row) {
 	$report->outputRow($row);
@@ -234,4 +265,6 @@ foreach ($rows as &$row) {
 $report->finish();
 $outputter->finish();
 
-echo "{$outputter->output}\n";
+if ($fp !== false) {
+    fclose($fp);
+}

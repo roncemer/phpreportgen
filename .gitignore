@@ -1,0 +1,7 @@
+vendor
+composer.lock
+tests/output.html
+tests/output.csv
+tests/output.tsv
+tests/output.xls
+tests/output.pdf
