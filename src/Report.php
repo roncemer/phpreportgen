@@ -263,7 +263,7 @@ class Report
 
         $rowData = '';
         $sep = '';
-        $colNum = -1;
+        $colNum = 0;
 
         if ($this->outputter->outputFormat == 'html') {
             $this->ensureHTMLTableSection('thead');
@@ -496,7 +496,7 @@ class Report
 
         $sep = '';
         $rowData = '';
-        $colNum = -1;
+        $colNum = 0;
 
         if ($this->outputter->outputFormat == 'html') {
             $this->ensureHTMLTableSection('tbody');
@@ -731,7 +731,6 @@ class Report
 
         $sep = '';
         $rowData = '';
-        $colNum = -1;
 
         if ($this->outputter->outputFormat == 'html') {
             $this->ensureHTMLTableSection(($appearance == 'heading') ? 'thead' : 'tbody');
@@ -786,9 +785,9 @@ class Report
             case 'xls':
             case 'xlsx':
             case 'ods':
-                $cell = $this->outputter->worksheet->getCellByColumnAndRow($ci, $this->outputter->worksheetRowNum);
+                $cell = $this->outputter->worksheet->getCellByColumnAndRow($ci+1, $this->outputter->worksheetRowNum);
                 $cell->setValueExplicit($text, DataType::TYPE_STRING);
-                $style = $this->outputter->worksheet->getStyleByColumnAndRow($ci, $this->outputter->worksheetRowNum);
+                $style = $this->outputter->worksheet->getStyleByColumnAndRow($ci+1, $this->outputter->worksheetRowNum);
                 $style->getAlignment()->setHorizontal($align);
                 if (($appearance == 'heading') || ($appearance == 'totals')) {
                     $style->getFont()->setBold(true);
@@ -925,7 +924,7 @@ class Report
 
         $sep = '';
         $rowData = '';
-        $colNum = -1;
+        $colNum = 0;
 
         if ($this->outputter->outputFormat == 'html') {
             $this->ensureHTMLTableSection('tbody');
@@ -989,9 +988,9 @@ class Report
                     $style->getFont()->setBold(true);
                     if ($nTotDescCols > 1) {
                         $this->outputter->worksheet->mergeCellsByColumnAndRow(
-                            $colNum+1,
+                            $colNum,
                             $this->outputter->worksheetRowNum,
-                            $colNum+1+($nTotDescCols-1),
+                            $colNum+($nTotDescCols-1),
                             $this->outputter->worksheetRowNum
                         );
                     }
