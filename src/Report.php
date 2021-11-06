@@ -795,9 +795,9 @@ class Report
                 }
                 if ($columnSpan > 1) {
                     $this->outputter->worksheet->mergeCellsByColumnAndRow(
-                        $ci,
+                        $ci+1,
                         $this->outputter->worksheetRowNum,
-                        $ci+($columnSpan-1),
+                        $ci+1+($columnSpan-1),
                         $this->outputter->worksheetRowNum
                     );
                 }
@@ -989,9 +989,9 @@ class Report
                     $style->getFont()->setBold(true);
                     if ($nTotDescCols > 1) {
                         $this->outputter->worksheet->mergeCellsByColumnAndRow(
-                            $colNum,
+                            $colNum+1,
                             $this->outputter->worksheetRowNum,
-                            $colNum+($nTotDescCols-1),
+                            $colNum+1+($nTotDescCols-1),
                             $this->outputter->worksheetRowNum
                         );
                     }
