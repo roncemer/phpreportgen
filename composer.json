@@ -1,7 +1,7 @@
 {
     "name": "roncemer/phpreportgen",
     "description": "HTML, CSV, TSV, XLS, PDF reporting package, with nested sections and totaling",
-    "keywords": ["reporting", "csv", "tsv", "xls", "pdf"],
+    "keywords": ["reporting", "reports", "report", "html", "csv", "tsv", "xls", "xlsx", "ods", "pdf"],
     "homepage": "https://github.com/roncemer/phpreportgen",
     "type": "library",
     "license": [

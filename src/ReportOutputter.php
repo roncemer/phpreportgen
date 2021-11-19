@@ -291,7 +291,7 @@ ReportOutputter::$OUTPUT_FORMATS = array(
     (object)array('format'=>'tsv', 'mimeType'=>'text/tab-separated-values', 'extension'=>'.tsv', 'description'=>'Tab-Separated Values'),
     (object)array('format'=>'xls', 'mimeType'=>'application/vnd.ms-excel', 'extension'=>'.xls', 'description'=>'XLS Spreadsheet'),
     (object)array('format'=>'xlsx', 'mimeType'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'extension'=>'.xlsx', 'description'=>'XLSX Spreadsheet'),
-    (object)array('format'=>'ods', 'mimeType'=>'application/vnd.oasis.opendocument.spreadsheet', 'extension'=>'.xlsx', 'description'=>'ODS Spreadsheet'),
+    (object)array('format'=>'ods', 'mimeType'=>'application/vnd.oasis.opendocument.spreadsheet', 'extension'=>'.ods', 'description'=>'ODS Spreadsheet'),
     (object)array('format'=>'pdf', 'mimeType'=>'application/pdf', 'extension'=>'.pdf', 'description'=>'Portable Document Format (PDF)'),
 );
 
