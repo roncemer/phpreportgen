@@ -1,9 +1,9 @@
 <?php
 namespace Roncemer\PHPReportGen;
 
-use Fpdf\FPDF;
+use Fpdf\Fpdf;
 
-class FPDFCustom extends FPDF
+class FPDFCustom extends Fpdf
 {
     public function getLMargin() {
         return $this->lMargin;
